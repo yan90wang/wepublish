@@ -322,6 +322,12 @@ const GetArticleQuery = gql`
             author
           }
 
+          ... on DangerousHTMLBlock {
+            html
+            width
+            height
+          }
+
           ... on LinkPageBreakBlock {
             text
             linkText

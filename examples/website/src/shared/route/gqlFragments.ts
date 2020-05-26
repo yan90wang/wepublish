@@ -112,6 +112,15 @@ export const richTextBlockDataFragment = gql`
   }
 `
 
+export const dangerousHTMLBlockDataFragment = gql`
+  fragment DangerousHTMLBlockData on DangerousHTMLBlock {
+    __typename
+    html
+    width
+    height
+  }
+`
+
 export const imageBlockDataFragment = gql`
   fragment ImageBlockData on ImageBlock {
     __typename

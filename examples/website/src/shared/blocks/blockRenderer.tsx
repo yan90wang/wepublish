@@ -15,6 +15,7 @@ import {PageBreakBlock} from './peerPageBreak'
 import {ListicalBLock} from './listicalBlock'
 import {TitleBlock} from './titleBlock'
 import {TitleImageBlock} from './titleBlockImage'
+import {DangerousHTMLBlock} from './dangerousHTMLBlock'
 
 export interface BlockRendererProps {
   blocks: Block[]
@@ -56,6 +57,9 @@ export function renderBlock(block: Block | null, opts: RenderBlockOptions) {
   switch (block.type) {
     case BlockType.RichText:
       return <RichTextBlock value={block.value} />
+
+    case BlockType.DangerousHTML:
+      return <DangerousHTMLBlock data={block.value} />
 
     case BlockType.Gallery:
       return <GalleryBlock media={block.value.media} />

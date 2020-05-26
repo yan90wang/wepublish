@@ -20,7 +20,8 @@ import {
   quoteBlockDataFragment,
   titleBlockDataFragment,
   articleMetaDataFragment,
-  gridBlockFrontDataGQLfragment
+  gridBlockFrontDataGQLfragment,
+  dangerousHTMLBlockDataFragment
 } from './gqlFragments'
 
 import {BlockRenderer} from '../blocks/blockRenderer'
@@ -54,6 +55,7 @@ const ArticleQuery = gql`
         ...QuoteBlockData
         ...TitleBlockData
         ...ArticleGridBlockData
+        ...DangerousHTMLBlockData
       }
     }
   }
@@ -74,6 +76,7 @@ const ArticleQuery = gql`
   ${quoteBlockDataFragment}
   ${titleBlockDataFragment}
   ${gridBlockFrontDataGQLfragment}
+  ${dangerousHTMLBlockDataFragment}
 `
 
 export interface ArticleTemplateContainerProps {

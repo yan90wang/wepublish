@@ -231,10 +231,11 @@ export const GraphQLQuery = new GraphQLObjectType<undefined, Context>({
     article: {
       type: GraphQLArticle,
       args: {id: {type: GraphQLID}},
-      resolve(root, {id}, {authenticate, loaders}) {
+      async resolve(root, {id}, {authenticate, loaders}) {
         const {roles} = authenticate()
         authorise(CanGetArticle, roles)
-        return loaders.articles.load(id)
+        const article = await loaders.articles.load(id)
+        return article
       }
     },
 

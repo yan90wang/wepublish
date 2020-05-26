@@ -16,7 +16,8 @@ export enum BlockType {
   ImageGallery = 'imageGallery',
   Listicle = 'listicle',
   LinkPageBreak = 'linkPageBreak',
-  ArticleTeaserGrid = 'articleTeaserGrid'
+  ArticleTeaserGrid = 'articleTeaserGrid',
+  DangerousHTML = 'dangerousHTML'
 }
 
 export interface RichTextBlock {
@@ -120,6 +121,12 @@ export interface ArticleTeaserGridBlock {
   readonly teasers: ArticleTeaser[]
   readonly numColumns: number
 }
+export interface DangerousHTMLBlock {
+  readonly type: BlockType.DangerousHTML
+  readonly html: string
+  readonly width?: number
+  readonly height?: number
+}
 
 export type ArticleBlock =
   | RichTextBlock
@@ -136,6 +143,7 @@ export type ArticleBlock =
   | YouTubeVideoBlock
   | SoundCloudTrackBlock
   | ArticleTeaserGridBlock
+  | DangerousHTMLBlock
 
 export type PageBlock = ArticleBlock
 export type Block = ArticleBlock | PageBlock

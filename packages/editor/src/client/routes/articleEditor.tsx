@@ -59,7 +59,8 @@ import {
   EmbedType,
   LinkPageBreakBlockListValue,
   ArticleTeaserGridBlock1ListValue,
-  ArticleTeaserGridBlock6ListValue
+  ArticleTeaserGridBlock6ListValue,
+  DangerousHTMLBlockValue
 } from '../api/blocks'
 
 import {RichTextBlock, createDefaultValue} from '../blocks/richTextBlock'
@@ -70,6 +71,7 @@ import {TitleBlock} from '../blocks/titleBlock'
 import {Author} from '../api/author'
 import {LinkPageBreakBlock} from '../blocks/linkPageBreakBlock'
 import {TeaserGridBlock} from '../blocks/teaserGridBlock'
+import {DangerousHTMLBlock} from '../blocks/dangerousHTMLBlock'
 
 // TODO: Deduplicate with `PageEditor`.
 export type ArticleBlockValue =
@@ -81,6 +83,7 @@ export type ArticleBlockValue =
   | EmbedBlockListValue
   | ArticleTeaserGridBlock1ListValue
   | ArticleTeaserGridBlock6ListValue
+  | DangerousHTMLBlockValue
 
 export interface ArticleEditorProps {
   readonly id?: string
@@ -331,6 +334,13 @@ export function ArticleEditor({id}: ArticleEditorProps) {
                 field: props => <EmbedBlock {...props} />,
                 defaultValue: {type: EmbedType.Other},
                 label: 'Embed',
+                icon: MaterialIconCode
+              },
+
+              [BlockType.DangerousHTML]: {
+                field: props => <DangerousHTMLBlock {...props} />,
+                defaultValue: {html: ''},
+                label: 'Dangerous HTML',
                 icon: MaterialIconCode
               },
 

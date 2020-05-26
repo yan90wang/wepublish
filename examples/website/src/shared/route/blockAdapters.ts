@@ -1,11 +1,11 @@
 import {
+  ArticleMeta,
   Block,
   BlockType,
   EmbedType,
-  ArticleMeta,
+  HeaderType,
   ImageData,
-  TitleBlockValue,
-  HeaderType
+  TitleBlockValue
 } from '../types'
 import {BlockTypes} from './gqlFragments'
 import {authorsAdapter} from './articleAdapter'
@@ -197,6 +197,17 @@ function getBlocks(blocks: any, articleMeta?: ArticleMeta): Block[] {
             type: EmbedType.IFrame,
             title: block.title,
             url: block.url,
+            width: block.width,
+            height: block.height
+          }
+        }
+
+      case 'DangerousHTMLBlock':
+        return {
+          type: BlockType.DangerousHTML,
+          key: index,
+          value: {
+            html: block.html,
             width: block.width,
             height: block.height
           }

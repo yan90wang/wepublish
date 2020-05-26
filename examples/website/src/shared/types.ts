@@ -94,6 +94,7 @@ export enum BlockType {
   Image = 'image',
   Listicle = 'listicle',
   PeerPageBreak = 'linkPageBreak',
+  DangerousHTML = 'dangerousHTML',
 
   // Layout
   Grid = 'grid'
@@ -125,6 +126,15 @@ export interface QuoteBlock extends BaseBlock<BlockType.Quote, {text: string; au
 
 export interface ImageBlock extends BaseBlock<BlockType.Image, ImageData> {}
 export interface TitleImageBlock extends BaseBlock<BlockType.TitleImage, ImageData> {}
+
+export type DangerousHTMLBlockValue = {
+  html: string
+  width?: number
+  height?: number
+}
+
+export interface DangerousHTMLBlock
+  extends BaseBlock<BlockType.DangerousHTML, DangerousHTMLBlockValue> {}
 
 export interface ListicleBlock
   extends BaseBlock<
@@ -244,6 +254,7 @@ export type ArticleBlock =
   | PeerPageBreakBlock
   | TitleBlock
   | TitleImageBlock
+  | DangerousHTMLBlock
 
 export type FrontLayoutBlock = GridBlock
 export type FrontContentBlock = TeaserBlock

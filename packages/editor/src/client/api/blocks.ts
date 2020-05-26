@@ -20,7 +20,8 @@ export enum BlockType {
   Embed = 'embed',
   LinkPageBreak = 'linkPageBreak',
   ArticleTeaserGrid1 = 'articleTeaserGrid1',
-  ArticleTeaserGrid6 = 'articleTeaserGrid6'
+  ArticleTeaserGrid6 = 'articleTeaserGrid6',
+  DangerousHTML = 'dangerousHTML'
 }
 
 export type RichTextValue = Node[]
@@ -49,6 +50,12 @@ export interface LinkPageBreakBlockValue {
   readonly text: string
   readonly linkURL: string
   readonly linkText: string
+}
+
+export interface DangerousHTMLValue {
+  readonly html: string
+  readonly width?: number
+  readonly height?: number
 }
 
 export enum EmbedType {
@@ -140,6 +147,11 @@ export type ArticleTeaserGridBlock6ListValue = BlockListValue<
   TeaserGridBlockValue
 >
 
+export type DangerousHTMLBlockListValue = BlockListValue<
+  BlockType.DangerousHTML,
+  DangerousHTMLValue
+>
+
 export type BlockValue =
   | TitleBlockListValue
   | RichTextBlockListValue
@@ -149,6 +161,7 @@ export type BlockValue =
   | LinkPageBreakBlockListValue
   | ArticleTeaserGridBlock1ListValue
   | ArticleTeaserGridBlock6ListValue
+  | DangerousHTMLBlockListValue
 
 export interface BlockUnionMap {
   readonly image?: {
@@ -199,6 +212,12 @@ export interface BlockUnionMap {
   readonly embed?: {
     readonly url?: string
     readonly title?: string
+    readonly width?: number
+    readonly height?: number
+  }
+
+  readonly dangerousHTML?: {
+    readonly html: string
     readonly width?: number
     readonly height?: number
   }
@@ -254,6 +273,16 @@ export function unionMapForBlock(block: BlockValue): BlockUnionMap {
           linkURL: block.value.linkURL || undefined
         }
       }
+
+    case BlockType.DangerousHTML: {
+      return {
+        dangerousHTML: {
+          html: block.value.html || '<div></div>',
+          width: block.value.width || undefined,
+          height: block.value.height || undefined
+        }
+      }
+    }
 
     case BlockType.Embed: {
       const {value} = block
@@ -365,6 +394,17 @@ export function blockForQueryBlock(block: any): BlockValue | null {
         key,
         type: BlockType.Quote,
         value: {quote: block.quote ?? '', author: block.author ?? ''}
+      }
+
+    case 'DangerousHTMLBlock':
+      return {
+        key,
+        type: BlockType.DangerousHTML,
+        value: {
+          html: block.html,
+          width: block.width ?? -1,
+          height: block.height ?? -1
+        }
       }
 
     case 'FacebookPostBlock':

@@ -32,7 +32,8 @@ import {
   QuoteBlock,
   EmbedBlock,
   ImageCaptionEdge,
-  ArticleTeaser
+  ArticleTeaser,
+  DangerousHTMLBlock
 } from '../db/block'
 
 import {GraphQLArticle, GraphQLPublicArticle} from './article'
@@ -217,6 +218,18 @@ export const GraphQLEmbedBlock = new GraphQLObjectType<EmbedBlock, Context>({
   }
 })
 
+export const GraphQLDangerousHTML = new GraphQLObjectType<DangerousHTMLBlock, Context>({
+  name: 'DangerousHTMLBlock',
+  fields: {
+    html: {type: GraphQLNonNull(GraphQLString)},
+    width: {type: GraphQLInt},
+    height: {type: GraphQLInt}
+  },
+  isTypeOf(value) {
+    return value.type === BlockType.DangerousHTML
+  }
+})
+
 export const GraphQLListicleItem = new GraphQLObjectType<ListicleItem, Context>({
   name: 'ListicleItem',
   fields: {
@@ -371,6 +384,15 @@ export const GraphQLInputEmbedBlock = new GraphQLInputObjectType({
   }
 })
 
+export const GraphQLInputDangerousHTMLBlock = new GraphQLInputObjectType({
+  name: 'InputDangerousHTMLBlock',
+  fields: {
+    html: {type: GraphQLString},
+    width: {type: GraphQLInt},
+    height: {type: GraphQLInt}
+  }
+})
+
 export const GraphQLArticleTeaserInput = new GraphQLInputObjectType({
   name: 'ArticleTeaserInput',
   fields: {
@@ -401,6 +423,7 @@ export const GraphQLBlockInput = new GraphQLInputObjectType({
     [BlockType.YouTubeVideo]: {type: GraphQLInputYouTubeVideoBlock},
     [BlockType.SoundCloudTrack]: {type: GraphQLInputSoundCloudTrackBlock},
     [BlockType.Embed]: {type: GraphQLInputEmbedBlock},
+    [BlockType.DangerousHTML]: {type: GraphQLInputDangerousHTMLBlock},
     [BlockType.LinkPageBreak]: {type: GraphQLInputLinkPageBreakBlock},
     [BlockType.ArticleTeaserGrid]: {type: GraphQLArticleTeaserGridBlockInput}
   }
@@ -419,6 +442,7 @@ export const GraphQLBlock: GraphQLUnionType = new GraphQLUnionType({
     GraphQLYouTubeVideoBlock,
     GraphQLSoundCloudTrackBlock,
     GraphQLEmbedBlock,
+    GraphQLDangerousHTML,
     GraphQLListicleBlock,
     GraphQLLinkPageBreakBlock,
     GraphQLTitleBlock,
@@ -440,6 +464,7 @@ export const GraphQLPublicBlock = new GraphQLUnionType({
     GraphQLYouTubeVideoBlock,
     GraphQLSoundCloudTrackBlock,
     GraphQLEmbedBlock,
+    GraphQLDangerousHTML,
     GraphQLListicleBlock,
     GraphQLLinkPageBreakBlock,
     GraphQLTitleBlock,
