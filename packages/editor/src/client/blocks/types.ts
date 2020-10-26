@@ -23,7 +23,8 @@ export enum BlockType {
   Embed = 'embed',
   LinkPageBreak = 'linkPageBreak',
   TeaserGrid1 = 'teaserGrid1',
-  TeaserGrid6 = 'teaserGrid6'
+  TeaserGrid6 = 'teaserGrid6',
+  FlexibleTeaserPlacement = 'flexibleTeaserPlacement' // FTP
 }
 
 export type RichTextBlockValue = Node[]
@@ -175,9 +176,18 @@ export interface PageTeaser extends PageTeaserLink, BaseTeaser {}
 
 export type Teaser = ArticleTeaser | PeerArticleTeaser | PageTeaser
 
-export interface TeaserGridBlockValue {
-  teasers: Array<[string, Teaser | null]>
+interface BaseTeaserGridBlock {
   numColumns: number
+}
+
+export interface TeaserGridBlockValue extends BaseTeaserGridBlock {
+  teasers: Array<[string, Teaser | null]>
+}
+
+type nColumnsWidth = number
+
+export interface FTPBlockValue extends BaseTeaserGridBlock {
+  teasers: Array<[string, nColumnsWidth, Teaser | null]>
 }
 
 export type RichTextBlockListValue = BlockListValue<BlockType.RichText, RichTextBlockValue>
@@ -199,6 +209,8 @@ export type TeaserGridBlock1ListValue = BlockListValue<BlockType.TeaserGrid1, Te
 
 export type TeaserGridBlock6ListValue = BlockListValue<BlockType.TeaserGrid6, TeaserGridBlockValue>
 
+export type FTPBlockListValue = BlockListValue<BlockType.FlexibleTeaserPlacement, FTPBlockValue>
+
 export type BlockValue =
   | TitleBlockListValue
   | RichTextBlockListValue
@@ -210,6 +222,7 @@ export type BlockValue =
   | LinkPageBreakBlockListValue
   | TeaserGridBlock1ListValue
   | TeaserGridBlock6ListValue
+  | FTPBlockListValue
 
 export function unionMapForBlock(block: BlockValue): BlockInput {
   switch (block.type) {
@@ -343,10 +356,13 @@ export function unionMapForBlock(block: BlockValue): BlockInput {
     }
 
     case BlockType.TeaserGrid1:
-    case BlockType.TeaserGrid6:
+    case BlockType.TeaserGrid6 || BlockType.FlexibleTeaserPlacement:
       return {
         teaserGrid: {
-          teasers: block.value.teasers.map(([, value]) => {
+          teasers: block.value.teasers.map(teaser => {
+            const value = teaser[teaser.length - 1] as Teaser
+            // TODO ensure teaser last item of array - probably seperate cases
+            // TODO need adjust image sizes to variable width
             switch (value?.type) {
               case TeaserType.Article:
                 return {
@@ -394,6 +410,50 @@ export function unionMapForBlock(block: BlockValue): BlockInput {
 
 export function blockForQueryBlock(block: FullBlockFragment | null): BlockValue {
   const key: string = nanoid()
+
+  const gridTeaserArticle = (teaser: ArticleTeaser) => {
+    return teaser.article
+      ? {
+          type: TeaserType.Article,
+          style: teaser.style,
+          image: teaser.image ?? undefined,
+          preTitle: teaser.preTitle ?? undefined,
+          title: teaser.title ?? undefined,
+          lead: teaser.lead ?? undefined,
+          article: teaser.article
+        }
+      : null
+  }
+
+  const gridPeerArticleTeaser = (teaser: PeerArticleTeaser) => {
+    return teaser.peer
+      ? {
+          type: TeaserType.PeerArticle,
+          style: teaser.style,
+          image: teaser.image ?? undefined,
+          preTitle: teaser.preTitle ?? undefined,
+          title: teaser.title ?? undefined,
+          lead: teaser.lead ?? undefined,
+          peer: teaser.peer,
+          articleID: teaser.articleID,
+          article: teaser.article ?? undefined
+        }
+      : null
+  }
+
+  const gridTeaserPage = (teaser: PageTeaser) => {
+    return teaser.page
+      ? {
+          type: TeaserType.Page,
+          style: teaser.style,
+          image: teaser.image ?? undefined,
+          preTitle: teaser.preTitle ?? undefined,
+          title: teaser.title ?? undefined,
+          lead: teaser.lead ?? undefined,
+          page: teaser.page
+        }
+      : null
+  }
 
   switch (block?.__typename) {
     case 'ImageBlock':
@@ -530,54 +590,13 @@ export function blockForQueryBlock(block: FullBlockFragment | null): BlockValue 
           teasers: block.teasers.map(teaser => {
             switch (teaser?.__typename) {
               case 'ArticleTeaser':
-                return [
-                  nanoid(),
-                  teaser.article
-                    ? {
-                        type: TeaserType.Article,
-                        style: teaser.style,
-                        image: teaser.image ?? undefined,
-                        preTitle: teaser.preTitle ?? undefined,
-                        title: teaser.title ?? undefined,
-                        lead: teaser.lead ?? undefined,
-                        article: teaser.article
-                      }
-                    : null
-                ]
+                return [nanoid(), gridTeaserArticle(teaser as ArticleTeaser)]
 
               case 'PeerArticleTeaser':
-                return [
-                  nanoid(),
-                  teaser.peer
-                    ? {
-                        type: TeaserType.PeerArticle,
-                        style: teaser.style,
-                        image: teaser.image ?? undefined,
-                        preTitle: teaser.preTitle ?? undefined,
-                        title: teaser.title ?? undefined,
-                        lead: teaser.lead ?? undefined,
-                        peer: teaser.peer,
-                        articleID: teaser.articleID,
-                        article: teaser.article ?? undefined
-                      }
-                    : null
-                ]
+                return [nanoid(), gridPeerArticleTeaser(teaser as PeerArticleTeaser)]
 
               case 'PageTeaser':
-                return [
-                  nanoid(),
-                  teaser.page
-                    ? {
-                        type: TeaserType.Page,
-                        style: teaser.style,
-                        image: teaser.image ?? undefined,
-                        preTitle: teaser.preTitle ?? undefined,
-                        title: teaser.title ?? undefined,
-                        lead: teaser.lead ?? undefined,
-                        page: teaser.page
-                      }
-                    : null
-                ]
+                return [nanoid(), gridTeaserPage(teaser as PageTeaser)]
 
               default:
                 return [nanoid(), null]
@@ -585,6 +604,33 @@ export function blockForQueryBlock(block: FullBlockFragment | null): BlockValue 
           })
         }
       }
+
+    // TODO: update editor/src/api/index.ts interface
+    //  - maybe integrate in above queryType, there will also be a single mobile conditional ?
+    // case 'FlexibleArticlePlacementBlock':
+    //  return {
+    //    key,
+    //    type: BlockType.FlexibleTeaserPlacement,
+    //    value: {
+    //      numColumns: block.numColumns,
+    //      nColumnsWidth: block.nColumnsWidth,
+    //      teasers: block.teasers.map(teaser => {
+    //        switch (teaser?.__typename) {
+    //          case 'ArticleTeaser':
+    //            return [nanoid(), gridTeaserArticle(teaser as ArticleTeaser)]
+
+    //          case 'PeerArticleTeaser':
+    //            return [nanoid(), gridPeerArticleTeaser(teaser as PeerArticleTeaser)]
+
+    //          case 'PageTeaser':
+    //            return [nanoid(), gridTeaserPage(teaser as PageTeaser)]
+
+    //          default:
+    //            return [nanoid(), null]
+    //        }
+    //      })
+    //    }
+    //  }
 
     case 'LinkPageBreakBlock':
       return {
